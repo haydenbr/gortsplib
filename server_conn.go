@@ -63,6 +63,7 @@ func prepareForDescribe(
 		Title:     d.Title,
 		Multicast: multicast,
 		FECGroups: d.FECGroups,
+		Raw:       d.Raw,
 	}
 
 	for i, medi := range d.Medias {

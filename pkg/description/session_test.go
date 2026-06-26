@@ -1002,6 +1002,17 @@ func TestSessionMarshal(t *testing.T) {
 	}
 }
 
+func TestSessionMarshalRaw(t *testing.T) {
+	raw := []byte("v=0\r\no=- 0 0 IN IP4 127.0.0.1\r\ns=raw\r\nc=IN IP4 0.0.0.0\r\nt=0 0\r\n")
+	desc := Session{
+		Title: "should be ignored",
+		Raw:   raw,
+	}
+	byts, err := desc.Marshal()
+	require.NoError(t, err)
+	require.Equal(t, raw, byts)
+}
+
 func TestSessionFindFormat(t *testing.T) {
 	tr := &format.Generic{
 		PayloadTyp: 97,
