@@ -79,6 +79,8 @@ type Session struct {
 
 	// Media streams.
 	Medias []*Media
+
+	Raw []byte
 }
 
 // FindFormat finds a certain format among all the formats in all the medias of the stream.
@@ -169,6 +171,10 @@ func (d *Session) Unmarshal(ssd *sdp.SessionDescription) error {
 
 // Marshal encodes the description in SDP format.
 func (d Session) Marshal() ([]byte, error) {
+	if d.Raw != nil {
+		return d.Raw, nil
+	}
+
 	var sessionName psdp.SessionName
 	if d.Title != "" {
 		sessionName = psdp.SessionName(d.Title)
