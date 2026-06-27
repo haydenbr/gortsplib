@@ -131,6 +131,7 @@ type ServerConn struct {
 	authNonce        string
 	httpReadBuf      *bufio.Reader
 	httpReadTunnelID string
+	httpDeferResp    bool
 
 	// in
 	chRequest       chan readReq
@@ -175,6 +176,10 @@ func (sc *ServerConn) SetUserData(v any) {
 // UserData returns some user data associated with the connection.
 func (sc *ServerConn) UserData() any {
 	return sc.userData
+}
+
+func (sc *ServerConn) SetHTTPDeferResp(v bool) {
+	sc.httpDeferResp = v
 }
 
 // Session returns the associated session.

@@ -136,30 +136,33 @@ func (cr *serverConnReader) handleTunneling(in io.ReadWriter) (io.ReadWriter, er
 
 		switch {
 		case isHTTPTunnel(req):
-			h := http.Header{}
-			h.Set("Cache-Control", "no-cache")
-			h.Set("Connection", "close")
-			h.Set("Content-Type", "application/x-rtsp-tunnelled")
-			h.Set("Pragma", "no-cache")
-			res := http.Response{
-				StatusCode:    http.StatusOK,
-				ProtoMajor:    1,
-				ProtoMinor:    req.ProtoMinor,
-				Header:        h,
-				ContentLength: -1,
-			}
-			var buf2 bytes.Buffer
-			res.Write(&buf2) //nolint:errcheck
-			cr.sc.nconn.SetWriteDeadline(time.Now().Add(cr.sc.s.WriteTimeout))
-			_, err = in.Write(buf2.Bytes())
-			if err != nil {
-				return nil, err
+			if !cr.sc.httpDeferResp || req.Method == http.MethodGet {
+				h := http.Header{}
+				h.Set("Cache-Control", "no-cache")
+				h.Set("Connection", "close")
+				h.Set("Content-Type", "application/x-rtsp-tunnelled")
+				h.Set("Pragma", "no-cache")
+				res := http.Response{
+					StatusCode:    http.StatusOK,
+					ProtoMajor:    1,
+					ProtoMinor:    req.ProtoMinor,
+					Header:        h,
+					ContentLength: -1,
+				}
+				var buf2 bytes.Buffer
+				res.Write(&buf2) //nolint:errcheck
+				cr.sc.nconn.SetWriteDeadline(time.Now().Add(cr.sc.s.WriteTimeout))
+				_, err = in.Write(buf2.Bytes())
+				if err != nil {
+					return nil, err
+				}
 			}
 
 			cr.sc.httpReadBuf = buf
 
 			err = cr.sc.s.handleHTTPChannel(sessionHandleHTTPChannelReq{
-				sc:       cr.sc,
+				sc: cr.sc,
+				// post is write channel, get is read channel
 				write:    (req.Method == http.MethodPost),
 				tunnelID: req.Header.Get("X-Sessioncookie"),
 			})
